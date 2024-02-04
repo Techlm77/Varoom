@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Varoom</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #ffee00;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="3dCanvas"></canvas>
+
+    <script>
+        var canvas = document.getElementById("3dCanvas"),
+            ctx = canvas.getContext("2d"),
+            width = canvas.width = window.innerWidth,
+            height = canvas.height = window.innerHeight
+
+        const carVertices = [
+            { x: -20, y: -5, z: -100, },
+            { x: 20, y: -5, z: -100, },
+            { x: 20, y: 5, z: -100, },
+            { x: -20, y: 5, z: -100, },
+            { x: -20, y: -5, z: 100, },
+            { x: 20, y: -5, z: 100, },
+            { x: 20, y: 5, z: 100, },
+            { x: -20, y: 5, z: 100, },
+            { x: -50, y: -5, z: -50, },
+            { x: 50, y: -5, z: -50, },
+            { x: 50, y: 5, z: -50, },
+            { x: -50, y: 5, z: -50, },
+            { x: -50, y: -30, z: 110, },
+            { x: 50, y: -30, z: 110, },
+            { x: 50, y: 5, z: 110, },
+            { x: -50, y: 5, z: 110, },
+            { x: -50, y: 5, z: -100, },
+            { x: -50, y: -5, z: -100, },
+            { x: 50, y: 5, z: -100, },
+            { x: 50, y: -5, z: -100, },
+            { x: -50, y: 5, z: -110, },
+            { x: -50, y: -5, z: -110, },
+            { x: 50, y: 5, z: -110, },
+            { x: 50, y: -5, z: -110, },
+            { x: -50, y: -5, z: 50, },
+            { x: 50, y: -5, z: 50, },
+            { x: 50, y: 5, z: 50, },
+            { x: -50, y: 5, z: 50, },
+            { x: -50, y: -30, z: 100, },
+            { x: 50, y: -30, z: 100, },
+            { x: 50, y: 5, z: 100, },
+            { x: -50, y: 5, z: 100, },
+            { x: 50, y: -30, z: 50, },
+            { x: -50, y: -30, z: 50, },
+            { x: 50, y: -5, z: 0, },
+            { x: -50, y: -5, z: 0, },
+            { x: 20, y: -30, z: 100, },
+            { x: -20, y: -30, z: 100, },
+            { x: 20, y: -30, z: 50, },
+            { x: -20, y: -30, z: 50, },
+            { x: -25, y: 10, z: -90, },
+            { x: -25, y: 10, z: -60, },
+            { x: -55, y: 10, z: -60, },
+            { x: -55, y: 10, z: -90, },
+            { x: -25, y: -20, z: -90, },
+            { x: -25, y: -20, z: -60, },
+            { x: -55, y: -20, z: -60, },
+            { x: -55, y: -20, z: -90, },
+            { x: 25, y: 10, z: -90, },
+            { x: 25, y: 10, z: -60, },
+            { x: 55, y: 10, z: -60, },
+            { x: 55, y: 10, z: -90, },
+            { x: 25, y: -20, z: -90, },
+            { x: 25, y: -20, z: -60, },
+            { x: 55, y: -20, z: -60, },
+            { x: 55, y: -20, z: -90, },
+            { x: 25, y: -20, z: 90, },
+            { x: 25, y: -20, z: 60, },
+            { x: 55, y: -20, z: 60, },
+            { x: 55, y: -20, z: 90, },
+            { x: 25, y: 10, z: 90, },
+            { x: 25, y: 10, z: 60, },
+            { x: 55, y: 10, z: 60, },
+            { x: 55, y: 10, z: 90, },
+            { x: -25, y: 10, z: 90, },
+            { x: -25, y: 10, z: 60, },
+            { x: -55, y: 10, z: 60, },
+            { x: -55, y: 10, z: 90, },
+            { x: -25, y: -20, z: 90, },
+            { x: -25, y: -20, z: 60, },
+            { x: -55, y: -20, z: 60, },
+            { x: -55, y: -20, z: 90, },
+            { x: -20, y: -5, z: 50, },
+            { x: 20, y: -5, z: 50, },
+            { x: 0, y: -80, z: 300, } // this is a camera and the rest above is the car
+        ];
+
+        const roadVertices = [
+            { x: -200, y: 80, z: -200 },
+            { x: 200, y: 80, z: -200 },
+            { x: 200, y: 80, z: 200 },
+            { x: -200, y: 80, z: 200 },
+            { x: -200, y: 150, z: 400 },
+            { x: 200, y: 150, z: 400 },
+            { x: 200, y: 150, z: 600 },
+            { x: -200, y: 150, z: 600 },
+            { x: -200, y: 150, z: -400 },
+            { x: 200, y: 150, z: -400 },
+            { x: 200, y: 150, z: -600 },
+            { x: -200, y: 150, z: -600 }
+        ];
+
+        let centerX = canvas.width / 2;
+        let centerY = canvas.height / 2;
+
+        let angleX = 0;
+        let angleY = 0;
+        let angleZ = 0;
+        let distanceZ = 800;
+
+        let carPosition = { x: 0, y: 0, z: 0 };
+        let carVelocity = { x: 0, y: 0, z: 0 };
+        let carAngle = { x: 0, y: 0, z: 0 };
+
+        const colors = ["#00f3ffcf", "#000000", "rgba(0, 0, 255, 0.3)"];
+
+        function rotateX(point, angle) {
+            const y = point.y * Math.cos(angle) + point.z * Math.sin(angle);
+            const z = point.z * Math.cos(angle) - point.y * Math.sin(angle);
+            return { ...point, y, z };
+        }
+
+        function rotateY(point, angle) {
+            const x = point.x * Math.cos(angle) - point.z * Math.sin(angle);
+            const z = point.z * Math.cos(angle) + point.x * Math.sin(angle);
+            return { ...point, x, z };
+        }
+
+        function rotateZ(point, angle) {
+            const x = point.x * Math.cos(angle) - point.y * Math.sin(angle);
+            const y = point.y * Math.cos(angle) + point.x * Math.sin(angle);
+            return { ...point, x, y };
+        }
+
+        let cameraPositionIndex = 74;
+
+        let cameraPosition = {
+            x: carVertices[cameraPositionIndex].x,
+            y: carVertices[cameraPositionIndex].y,
+            z: carVertices[cameraPositionIndex].z
+        };
+
+        function project(point) {
+            const scale = 0.5;
+            const depth = 1000;
+
+            const rotatedCamera = rotateX(carVertices[cameraPositionIndex], angleX);
+            const rotatedAndTranslatedCamera = rotateY(rotatedCamera, angleY);
+            const translatedCamera = {
+                x: rotatedAndTranslatedCamera.x + carPosition.x,
+                y: rotatedAndTranslatedCamera.y + carPosition.y,
+                z: rotatedAndTranslatedCamera.z + carPosition.z
+            };
+
+            const relativeX = point.x - translatedCamera.x;
+            const relativeY = point.y - translatedCamera.y;
+            const relativeZ = point.z - translatedCamera.z;
+
+            const x = relativeX * Math.cos(angleY) + relativeZ * Math.sin(angleY);
+            const y = relativeY;
+            const zAdjusted = -1 * (relativeZ * Math.cos(angleY) - relativeX * Math.sin(angleY));
+
+            const xProjected = x * depth / zAdjusted;
+            const yProjected = y * depth / zAdjusted;
+
+            return { x: centerX + xProjected * scale, y: centerY + yProjected * scale };
+        }
+
+        function drawLine(start, end) {
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            ctx.lineTo(end.x, end.y);
+            ctx.stroke();
+        }
+
+        function fillShape(points, color) {
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+
+        function drawObject() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const rotatedPointsX = carVertices.map(point => rotateX(point, angleX));
+            const rotatedPointsXY = rotatedPointsX.map(point => rotateY(point, angleY));
+            const rotatedPointsXYZ = rotatedPointsXY.map(point => rotateZ(point, angleZ));
+
+            const translatedPoints = rotatedPointsXYZ.map(point => ({
+                x: point.x + carPosition.x,
+                y: point.y + carPosition.y,
+                z: point.z + carPosition.z
+            }));
+
+            const roadPoints = roadVertices.map(point => ({
+                x: point.x,
+                y: point.y,
+                z: point.z
+            }));
+
+            const roadProjectedPoints = roadPoints.map(project);
+
+            drawLine(roadProjectedPoints[0], roadProjectedPoints[1]);
+            drawLine(roadProjectedPoints[1], roadProjectedPoints[2]);
+            drawLine(roadProjectedPoints[2], roadProjectedPoints[3]);
+            drawLine(roadProjectedPoints[3], roadProjectedPoints[0]);
+            drawLine(roadProjectedPoints[3], roadProjectedPoints[4]);
+            drawLine(roadProjectedPoints[2], roadProjectedPoints[5]);
+            drawLine(roadProjectedPoints[5], roadProjectedPoints[4]);
+            drawLine(roadProjectedPoints[5], roadProjectedPoints[6]);
+            drawLine(roadProjectedPoints[4], roadProjectedPoints[7]);
+            drawLine(roadProjectedPoints[6], roadProjectedPoints[7]);
+            drawLine(roadProjectedPoints[8], roadProjectedPoints[0]);
+            drawLine(roadProjectedPoints[9], roadProjectedPoints[1]);
+            drawLine(roadProjectedPoints[8], roadProjectedPoints[9]);
+
+            fillShape([roadProjectedPoints[0], roadProjectedPoints[1], roadProjectedPoints[2], roadProjectedPoints[3]], colors[0]);
+            fillShape([roadProjectedPoints[0], roadProjectedPoints[1], roadProjectedPoints[9], roadProjectedPoints[8]], colors[0]);
+            fillShape([roadProjectedPoints[3], roadProjectedPoints[2], roadProjectedPoints[5], roadProjectedPoints[4]], colors[0]);
+            fillShape([roadProjectedPoints[4], roadProjectedPoints[5], roadProjectedPoints[6], roadProjectedPoints[7]], colors[0]);
+
+            const carProjectedPoints = translatedPoints.map(project);
+
+            drawLine(carProjectedPoints[0], carProjectedPoints[1]);
+            drawLine(carProjectedPoints[1], carProjectedPoints[2]);
+            drawLine(carProjectedPoints[2], carProjectedPoints[3]);
+            drawLine(carProjectedPoints[3], carProjectedPoints[0]);
+            drawLine(carProjectedPoints[4], carProjectedPoints[5]);
+            drawLine(carProjectedPoints[5], carProjectedPoints[6]);
+            drawLine(carProjectedPoints[6], carProjectedPoints[7]);
+            drawLine(carProjectedPoints[7], carProjectedPoints[4]);
+            drawLine(carProjectedPoints[0], carProjectedPoints[4]);
+            drawLine(carProjectedPoints[1], carProjectedPoints[5]);
+            drawLine(carProjectedPoints[2], carProjectedPoints[6]);
+            drawLine(carProjectedPoints[3], carProjectedPoints[7]);
+            drawLine(carProjectedPoints[8], carProjectedPoints[9]);
+            drawLine(carProjectedPoints[9], carProjectedPoints[10]);
+            drawLine(carProjectedPoints[10], carProjectedPoints[11]);
+            drawLine(carProjectedPoints[11], carProjectedPoints[8]);
+            drawLine(carProjectedPoints[12], carProjectedPoints[13]);
+            drawLine(carProjectedPoints[13], carProjectedPoints[14]);
+            drawLine(carProjectedPoints[14], carProjectedPoints[15]);
+            drawLine(carProjectedPoints[15], carProjectedPoints[12]);
+            drawLine(carProjectedPoints[16], carProjectedPoints[3]);
+            drawLine(carProjectedPoints[17], carProjectedPoints[0]);
+            drawLine(carProjectedPoints[17], carProjectedPoints[16]);
+            drawLine(carProjectedPoints[18], carProjectedPoints[2]);
+            drawLine(carProjectedPoints[19], carProjectedPoints[1]);
+            drawLine(carProjectedPoints[19], carProjectedPoints[18]);
+            drawLine(carProjectedPoints[20], carProjectedPoints[16]);
+            drawLine(carProjectedPoints[21], carProjectedPoints[17]);
+            drawLine(carProjectedPoints[22], carProjectedPoints[18]);
+            drawLine(carProjectedPoints[23], carProjectedPoints[19]);
+            drawLine(carProjectedPoints[20], carProjectedPoints[22]);
+            drawLine(carProjectedPoints[21], carProjectedPoints[23]);
+            drawLine(carProjectedPoints[24], carProjectedPoints[8]);
+            drawLine(carProjectedPoints[25], carProjectedPoints[9]);
+            drawLine(carProjectedPoints[26], carProjectedPoints[10]);
+            drawLine(carProjectedPoints[27], carProjectedPoints[11]);
+            drawLine(carProjectedPoints[27], carProjectedPoints[24]);
+            drawLine(carProjectedPoints[26], carProjectedPoints[25]);
+            drawLine(carProjectedPoints[26], carProjectedPoints[27]);
+            drawLine(carProjectedPoints[25], carProjectedPoints[24]);
+            drawLine(carProjectedPoints[23], carProjectedPoints[22]);
+            drawLine(carProjectedPoints[21], carProjectedPoints[20]);
+            drawLine(carProjectedPoints[28], carProjectedPoints[12]);
+            drawLine(carProjectedPoints[29], carProjectedPoints[13]);
+            drawLine(carProjectedPoints[30], carProjectedPoints[14]);
+            drawLine(carProjectedPoints[31], carProjectedPoints[15]);
+            drawLine(carProjectedPoints[28], carProjectedPoints[31]);
+            drawLine(carProjectedPoints[28], carProjectedPoints[29]);
+            drawLine(carProjectedPoints[29], carProjectedPoints[30]);
+            drawLine(carProjectedPoints[30], carProjectedPoints[6]);
+            drawLine(carProjectedPoints[31], carProjectedPoints[7]);
+            drawLine(carProjectedPoints[32], carProjectedPoints[25]);
+            drawLine(carProjectedPoints[33], carProjectedPoints[24]);
+            drawLine(carProjectedPoints[34], carProjectedPoints[32]);
+            drawLine(carProjectedPoints[35], carProjectedPoints[33]);
+            drawLine(carProjectedPoints[35], carProjectedPoints[34]);
+            drawLine(carProjectedPoints[33], carProjectedPoints[32]);
+            drawLine(carProjectedPoints[36], carProjectedPoints[5]);
+            drawLine(carProjectedPoints[37], carProjectedPoints[4]);
+            drawLine(carProjectedPoints[38], carProjectedPoints[36]);
+            drawLine(carProjectedPoints[39], carProjectedPoints[37]);
+            drawLine(carProjectedPoints[40], carProjectedPoints[41]);
+            drawLine(carProjectedPoints[41], carProjectedPoints[42]);
+            drawLine(carProjectedPoints[42], carProjectedPoints[43]);
+            drawLine(carProjectedPoints[43], carProjectedPoints[40]);
+            drawLine(carProjectedPoints[44], carProjectedPoints[45]);
+            drawLine(carProjectedPoints[45], carProjectedPoints[46]);
+            drawLine(carProjectedPoints[46], carProjectedPoints[47]);
+            drawLine(carProjectedPoints[47], carProjectedPoints[44]);
+            drawLine(carProjectedPoints[40], carProjectedPoints[44]);
+            drawLine(carProjectedPoints[41], carProjectedPoints[45]);
+            drawLine(carProjectedPoints[42], carProjectedPoints[46]);
+            drawLine(carProjectedPoints[43], carProjectedPoints[47]);
+            drawLine(carProjectedPoints[48], carProjectedPoints[49]);
+            drawLine(carProjectedPoints[49], carProjectedPoints[50]);
+            drawLine(carProjectedPoints[50], carProjectedPoints[51]);
+            drawLine(carProjectedPoints[51], carProjectedPoints[48]);
+            drawLine(carProjectedPoints[52], carProjectedPoints[53]);
+            drawLine(carProjectedPoints[53], carProjectedPoints[54]);
+            drawLine(carProjectedPoints[54], carProjectedPoints[55]);
+            drawLine(carProjectedPoints[55], carProjectedPoints[52]);
+            drawLine(carProjectedPoints[48], carProjectedPoints[52]);
+            drawLine(carProjectedPoints[49], carProjectedPoints[53]);
+            drawLine(carProjectedPoints[50], carProjectedPoints[54]);
+            drawLine(carProjectedPoints[51], carProjectedPoints[55]);
+            drawLine(carProjectedPoints[56], carProjectedPoints[57]);
+            drawLine(carProjectedPoints[57], carProjectedPoints[58]);
+            drawLine(carProjectedPoints[58], carProjectedPoints[59]);
+            drawLine(carProjectedPoints[59], carProjectedPoints[56]);
+            drawLine(carProjectedPoints[60], carProjectedPoints[61]);
+            drawLine(carProjectedPoints[61], carProjectedPoints[62]);
+            drawLine(carProjectedPoints[62], carProjectedPoints[63]);
+            drawLine(carProjectedPoints[63], carProjectedPoints[60]);
+            drawLine(carProjectedPoints[56], carProjectedPoints[60]);
+            drawLine(carProjectedPoints[57], carProjectedPoints[61]);
+            drawLine(carProjectedPoints[58], carProjectedPoints[62]);
+            drawLine(carProjectedPoints[59], carProjectedPoints[63]);
+            drawLine(carProjectedPoints[64], carProjectedPoints[65]);
+            drawLine(carProjectedPoints[65], carProjectedPoints[66]);
+            drawLine(carProjectedPoints[66], carProjectedPoints[67]);
+            drawLine(carProjectedPoints[67], carProjectedPoints[64]);
+            drawLine(carProjectedPoints[68], carProjectedPoints[69]);
+            drawLine(carProjectedPoints[69], carProjectedPoints[70]);
+            drawLine(carProjectedPoints[70], carProjectedPoints[71]);
+            drawLine(carProjectedPoints[71], carProjectedPoints[68]);
+            drawLine(carProjectedPoints[64], carProjectedPoints[68]);
+            drawLine(carProjectedPoints[65], carProjectedPoints[69]);
+            drawLine(carProjectedPoints[66], carProjectedPoints[70]);
+            drawLine(carProjectedPoints[67], carProjectedPoints[71]);
+            drawLine(carProjectedPoints[72], carProjectedPoints[39]);
+            drawLine(carProjectedPoints[73], carProjectedPoints[38]);
+
+            fillShape([carProjectedPoints[40], carProjectedPoints[41], carProjectedPoints[42], carProjectedPoints[43]], colors[1]);
+            fillShape([carProjectedPoints[44], carProjectedPoints[45], carProjectedPoints[46], carProjectedPoints[47]], colors[1]);
+            fillShape([carProjectedPoints[48], carProjectedPoints[49], carProjectedPoints[50], carProjectedPoints[51]], colors[1]);
+            fillShape([carProjectedPoints[52], carProjectedPoints[53], carProjectedPoints[54], carProjectedPoints[55]], colors[1]);
+            fillShape([carProjectedPoints[56], carProjectedPoints[57], carProjectedPoints[58], carProjectedPoints[59]], colors[1]);
+            fillShape([carProjectedPoints[60], carProjectedPoints[61], carProjectedPoints[62], carProjectedPoints[63]], colors[1]);
+            fillShape([carProjectedPoints[64], carProjectedPoints[65], carProjectedPoints[66], carProjectedPoints[67]], colors[1]);
+            fillShape([carProjectedPoints[68], carProjectedPoints[69], carProjectedPoints[70], carProjectedPoints[71]], colors[1]);
+            fillShape([carProjectedPoints[42], carProjectedPoints[46], carProjectedPoints[47], carProjectedPoints[43]], colors[1]);
+            fillShape([carProjectedPoints[52], carProjectedPoints[55], carProjectedPoints[51], carProjectedPoints[48]], colors[1]);
+            fillShape([carProjectedPoints[55], carProjectedPoints[54], carProjectedPoints[50], carProjectedPoints[51]], colors[1]);
+            fillShape([carProjectedPoints[54], carProjectedPoints[53], carProjectedPoints[49], carProjectedPoints[50]], colors[1]);
+            fillShape([carProjectedPoints[52], carProjectedPoints[53], carProjectedPoints[49], carProjectedPoints[48]], colors[1]);
+            fillShape([carProjectedPoints[46], carProjectedPoints[42], carProjectedPoints[41], carProjectedPoints[45]], colors[1]);
+            fillShape([carProjectedPoints[45], carProjectedPoints[41], carProjectedPoints[40], carProjectedPoints[44]], colors[1]);
+            fillShape([carProjectedPoints[40], carProjectedPoints[44], carProjectedPoints[47], carProjectedPoints[43]], colors[1]);
+            fillShape([carProjectedPoints[68], carProjectedPoints[69], carProjectedPoints[65], carProjectedPoints[64]], colors[1]);
+            fillShape([carProjectedPoints[69], carProjectedPoints[70], carProjectedPoints[66], carProjectedPoints[65]], colors[1]);
+            fillShape([carProjectedPoints[70], carProjectedPoints[71], carProjectedPoints[67], carProjectedPoints[66]], colors[1]);
+            fillShape([carProjectedPoints[71], carProjectedPoints[67], carProjectedPoints[64], carProjectedPoints[68]], colors[1]);
+            fillShape([carProjectedPoints[59], carProjectedPoints[63], carProjectedPoints[62], carProjectedPoints[58]], colors[1]);
+            fillShape([carProjectedPoints[58], carProjectedPoints[57], carProjectedPoints[61], carProjectedPoints[62]], colors[1]);
+            fillShape([carProjectedPoints[57], carProjectedPoints[56], carProjectedPoints[60], carProjectedPoints[61]], colors[1]);
+            fillShape([carProjectedPoints[60], carProjectedPoints[63], carProjectedPoints[59], carProjectedPoints[56]], colors[1]);
+
+            requestAnimationFrame(drawObject);
+        }
+
+        function updateCarPosition() {
+            const moveSpeed = 0.1;
+            const rotateSpeed = 0.02;
+            const gravity = 0.1;
+
+            carVelocity.y += gravity;
+
+            carPosition.x += carVelocity.x;
+            carPosition.y += carVelocity.y;
+            carPosition.z += carVelocity.z;
+
+            const roadHeight = getRoadHeight(carPosition.x, carPosition.y, carPosition.z);
+
+            if (carPosition.y > roadHeight) {
+                carPosition.y = roadHeight;
+                carVelocity.y = 0;
+            }
+
+            if (keyState["t"]) {
+                carVelocity.y -= moveSpeed;
+            }
+            if (keyState["g"]) {
+                carVelocity.y += moveSpeed;
+            }
+            if (keyState["f"]) {
+                carVelocity.x -= moveSpeed * Math.cos(angleY);
+                carVelocity.z -= moveSpeed * Math.sin(angleY);
+            }
+            if (keyState["h"]) {
+                carVelocity.x += moveSpeed * Math.cos(angleY);
+                carVelocity.z += moveSpeed * Math.sin(angleY);
+            }
+            if (keyState["w"]) {
+                carVelocity.x += moveSpeed * Math.sin(angleY) * Math.cos(angleX);
+                carVelocity.y -= moveSpeed * Math.sin(angleX);
+                carVelocity.z -= moveSpeed * Math.cos(angleY) * Math.cos(angleX);
+            }
+            if (keyState["s"]) {
+                carVelocity.x -= moveSpeed * Math.sin(angleY) * Math.cos(angleX);
+                carVelocity.y += moveSpeed * Math.sin(angleX);
+                carVelocity.z += moveSpeed * Math.cos(angleY) * Math.cos(angleX);
+            }
+            if (keyState["a"]) {
+                angleY -= rotateSpeed;
+            }
+            if (keyState["d"]) {
+                angleY += rotateSpeed;
+            }
+            if (keyState["i"]) {
+                angleX -= rotateSpeed;
+            }
+            if (keyState["k"]) {
+                angleX += rotateSpeed;
+            }
+        }
+
+        function getRoadHeight(x, y, z) {
+            const p0 = { x: -200, y: 80, z: -200 };
+            const p1 = { x: 200, y: 80, z: -200 };
+            const p2 = { x: 200, y: 80, z: 200 };
+            const p3 = { x: -200, y: 80, z: 200 };
+
+            const p4 = { x: -200, y: 150, z: 400 };
+            const p5 = { x: 200, y: 150, z: 400 };
+            const p6 = { x: 200, y: 150, z: 600 };
+            const p7 = { x: -200, y: 150, z: 600 };
+            if (y <= 80) {
+                const t0 = (x - p0.x) / (p1.x - p0.x);
+                const u0 = (z - p0.z) / (p2.z - p0.z);
+
+                const y01 = p0.y + t0 * (p1.y - p0.y);
+                const y32 = p3.y + t0 * (p2.y - p3.y);
+
+                return y01 + u0 * (y32 - y01);
+            } else if (y <= 150) {
+                const t1 = (x - p2.x) / (p3.x - p2.x);
+                const u1 = (z - p2.z) / (p5.z - p2.z);
+
+                const y23 = p2.y + t1 * (p3.y - p2.y);
+                const y54 = p5.y + t1 * (p4.y - p5.y);
+
+                const rampHeight = y23 + u1 * (y54 - y23);
+
+                const v = (y - 80) / (150 - 80);
+                const roadHeight = getRoadHeight(x, 80, z);
+
+                return roadHeight + v * (rampHeight - roadHeight);
+            } else {
+                const t2 = (x - p4.x) / (p5.x - p4.x);
+                const u2 = (z - p4.z) / (p7.z - p4.z);
+
+                const y45 = p4.y + t2 * (p5.y - p4.y);
+                const y76 = p7.y + t2 * (p6.y - p7.y);
+
+                return y45 + u2 * (y76 - y45);
+            }
+        }
+
+        let keyState = {};
+
+        window.addEventListener("keydown", function (e) {
+            keyState[e.key.toLowerCase()] = true;
+        });
+
+        window.addEventListener("keyup", function (e) {
+            keyState[e.key.toLowerCase()] = false;
+        });
+
+        function handleResize() {
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+        }
+
+        window.addEventListener("resize", handleResize);
+
+        drawObject();
+        setInterval(updateCarPosition, 8);
+    </script>
+</body>
+
+</html>
